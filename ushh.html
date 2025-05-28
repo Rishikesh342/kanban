@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Kanban Board</title>
+   <link rel="stylesheet" href="shh.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Kanban Board</h1>
+       
+    </div>
+
+    <div class="add-task-section">
+        <h2>Add New Task</h2>
+        <form id="taskForm">
+            <div class="form-group">
+                <label for="taskTitle">Task Title:</label>
+                <input type="text" id="taskTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="taskDescription">Description:</label>
+                <textarea id="taskDescription"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="taskPoints">Story Points:</label>
+                <input type="number" id="taskPoints" min="1" max="20" value="1">
+            </div>
+            <div class="form-group">
+                <label for="taskStatus">Initial Status:</label>
+                <select id="taskStatus">
+                    <option value="new">New</option>
+                    <option value="backlog">Product Backlog</option>
+                    <option value="sprint-backlog">Sprint Backlog</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="code-review">Code Review</option>
+                    <option value="testing">Testing</option>
+                    <option value="ready-deploy">Ready to Deploy</option>
+                    <option value="deployed">Deployed</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="done">Done</option>
+                </select>
+            </div>
+            <button type="submit" class="add-btn">Add Task</button>
+        </form>
+    </div>
+
+    <div class="kanban-container">
+      
+        <div class="kanban-row">
+            <div class="column">
+                <div class="column-header">
+                    New
+                    <div class="task-count" id="count-new">0</div>
+                </div>
+                <div class="task-list" id="new"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Product Backlog
+                    <div class="task-count" id="count-backlog">0</div>
+                </div>
+                <div class="task-list" id="backlog"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Sprint Backlog
+                    <div class="task-count" id="count-sprint-backlog">0</div>
+                </div>
+                <div class="task-list" id="sprint-backlog"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    In Progress
+                    <div class="task-count" id="count-in-progress">0</div>
+                </div>
+                <div class="task-list" id="in-progress"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Code Review
+                    <div class="task-count" id="count-code-review">0</div>
+                </div>
+                <div class="task-list" id="code-review"></div>
+            </div>
+        </div>
+
+      
+        <div class="kanban-row">
+            <div class="column">
+                <div class="column-header">
+                    Testing
+                    <div class="task-count" id="count-testing">0</div>
+                </div>
+                <div class="task-list" id="testing"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Ready to Deploy
+                    <div class="task-count" id="count-ready-deploy">0</div>
+                </div>
+                <div class="task-list" id="ready-deploy"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Deployed
+                    <div class="task-count" id="count-deployed">0</div>
+                </div>
+                <div class="task-list" id="deployed"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Feedback
+                    <div class="task-count" id="count-feedback">0</div>
+                </div>
+                <div class="task-list" id="feedback"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-header">
+                    Done
+                    <div class="task-count" id="count-done">0</div>
+                </div>
+                <div class="task-list" id="done"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple data storage
+        var tasks = {};
+        var taskId = 1;
+
+        // Load tasks when page loads
+        function loadTasks() {
+            try {
+                var saved = localStorage.getItem('kanbanTasks');
+                if (saved) {
+                    tasks = JSON.parse(saved);
+                    taskId = parseInt(localStorage.getItem('kanbanTaskId')) || 1;
+                }
+            } catch (e) {
+                // If localStorage is not available, add some sample data
+                console.log('localStorage not available, using sample data');
+                addSampleTasks();
+            }
+            showAllTasks();
+        }
+
+        // Save tasks to storage
+        function saveTasks() {
+            try {
+                localStorage.setItem('kanbanTasks', JSON.stringify(tasks));
+                localStorage.setItem('kanbanTaskId', taskId.toString());
+            } catch (e) {
+                // localStorage not available in this environment
+                console.log('Data saved in memory only');
+            }
+        }
+
+        // Add sample tasks for demonstration
+        function addSampleTasks() {
+            tasks[1] = {
+                id: 1,
+                title: "Setup Project Repository",
+                description: "Initialize Git repository and setup basic project structure",
+                points: "3",
+                status: "new"
+            };
+            tasks[2] = {
+                id: 2,
+                title: "Design Database Schema", 
+                description: "Create ERD and design database tables for the application",
+                points: "5",
+                status: "new"
+            };
+            tasks[3] = {
+                id: 3,
+                title: "User Authentication",
+                description: "Implement login and registration functionality", 
+                points: "8",
+                status: "backlog"
+            };
+            tasks[4] = {
+                id: 4,
+                title: "API Endpoints",
+                description: "Create REST API endpoints for task operations",
+                points: "5", 
+                status: "in-progress"
+            };
+            tasks[5] = {
+                id: 5,
+                title: "Project Planning",
+                description: "Define project scope and create initial wireframes",
+                points: "2",
+                status: "done"
+            };
+            taskId = 6;
+        }
+
+        // Add new task
+        document.getElementById('taskForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            var title = document.getElementById('taskTitle').value.trim();
+            var desc = document.getElementById('taskDescription').value.trim();
+            var points = document.getElementById('taskPoints').value;
+            var status = document.getElementById('taskStatus').value;
+            
+            if (!title) return;
+            
+            var newTask = {
+                id: taskId,
+                title: title,
+                description: desc,
+                points: points,
+                status: status
+            };
+            
+            tasks[taskId] = newTask;
+            taskId++;
+            
+            saveTasks();
+            showAllTasks();
+            
+            // Clear form
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskPoints').value = '1';
+            document.getElementById('taskStatus').value = 'new';
+        };
+
+        // Create task HTML
+        function createTaskHTML(task) {
+            return '<div class="task-card" draggable="true" data-task-id="' + task.id + '">' +
+                   '<div class="task-title">' + task.title + '</div>' +
+                   '<div class="task-description">' + task.description + '</div>' +
+                   '<div class="task-meta">' +
+                   '<div class="task-points">' + task.points + ' pts</div>' +
+                   '<button class="delete-btn" onclick="deleteTask(' + task.id + ')">Delete</button>' +
+                   '</div></div>';
+        }
+
+        // Show all tasks in columns
+        function showAllTasks() {
+            var columns = ['new', 'backlog', 'sprint-backlog', 'in-progress', 'code-review', 'testing', 'ready-deploy', 'deployed', 'feedback', 'done'];
+            
+            for (var i = 0; i < columns.length; i++) {
+                var col = columns[i];
+                var html = '';
+                var count = 0;
+                
+                for (var id in tasks) {
+                    if (tasks[id].status === col) {
+                        html += createTaskHTML(tasks[id]);
+                        count++;
+                    }
+                }
+                
+                document.getElementById(col).innerHTML = html;
+                document.getElementById('count-' + col).textContent = count;
+            }
+            
+            addDragEvents();
+        }
+
+        // Delete task
+        function deleteTask(id) {
+            if (confirm('Delete this task?')) {
+                delete tasks[id];
+                saveTasks();
+                showAllTasks();
+            }
+        }
+
+        // Drag and drop
+        var draggedTask = null;
+
+        function addDragEvents() {
+            var taskCards = document.querySelectorAll('.task-card');
+            var taskLists = document.querySelectorAll('.task-list');
+            
+            // Add drag events to task cards
+            for (var i = 0; i < taskCards.length; i++) {
+                taskCards[i].ondragstart = function(e) {
+                    draggedTask = this.getAttribute('data-task-id');
+                    this.classList.add('dragging');
+                };
+                
+                taskCards[i].ondragend = function(e) {
+                    this.classList.remove('dragging');
+                };
+            }
+            
+            // Add drop events to task lists
+            for (var i = 0; i < taskLists.length; i++) {
+                taskLists[i].ondragover = function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                };
+                
+                taskLists[i].ondragleave = function(e) {
+                    this.classList.remove('drag-over');
+                };
+                
+                taskLists[i].ondrop = function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    if (draggedTask) {
+                        var newStatus = this.id;
+                        tasks[draggedTask].status = newStatus;
+                        saveTasks();
+                        showAllTasks();
+                        draggedTask = null;
+                    }
+                };
+            }
+        }
+
+        // Start the app
+        window.onload = function() {
+            loadTasks();
+        };
+    </script>
+</body>
+</html>
